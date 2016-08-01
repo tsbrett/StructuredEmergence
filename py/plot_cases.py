@@ -1,0 +1,134 @@
+import matplotlib.pyplot as plt  
+import matplotlib.patches as mpatches
+import pandas as pd  
+import numpy as np
+import fill_between_steps as fbs
+ 
+ 
+def plot_cases(datafile, outputfile):
+	# Read the data into a pandas DataFrame.    
+	case_data = pd.read_csv(datafile, sep = "\t")  
+	N_classes = len(case_data.loc[1])-1
+	N_rows = len(case_data.index)
+	case_data.columns = ["Time"] + ["n" + str(i) for i in range(1,N_classes)] + ["n_tot"]  
+	y_max = max(case_data["n_tot"])
+
+	##Old:
+	#case_data_cumul = pd.DataFrame([case_data.iloc[:,1:(i+1)].sum(axis=1) for i in range(1,N_classes)]).transpose()
+	#case_data_cumul.columns = ["n" + str(i) for i in range(1,N_classes)]
+	#case_data_cumul["Time"] = case_data["Time"] 
+	#case_data_cumul["n_tot"] = case_data["n_tot"]
+	#case_data_cumul = case_data_cumul[case_data.columns]
+
+	# These are the "Tableau 20" colors as RGB.    
+	tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),    
+		     (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150),    
+		     (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),    
+		     (227, 119, 194), (247, 182, 210), (127, 127, 127), (199, 199, 199),    
+		     (188, 189, 34), (219, 219, 141), (23, 190, 207), (158, 218, 229)]    
+	  
+	# Scale the RGB values to the [0, 1] range, which is the format matplotlib accepts.    
+	for i in range(len(tableau20)):    
+	    r, g, b = tableau20[i]    
+	    tableau20[i] = (r / 255., g / 255., b / 255.)    
+	  
+	#Define font:
+	hfont = {'fontname':'sans-serif'} 
+	  
+	  
+	# You typically want your plot to be ~1.33x wider than tall. This plot is a rare    
+	# exception because of the number of lines being plotted on it.    
+	# Common sizes: (10, 7.5) and (12, 9)    
+	plt.figure(figsize=(10, 7.5))    
+	  
+	# Remove the plot frame lines. They are unnecessary chartjunk.    
+	ax = plt.subplot(111)    
+	ax.spines["top"].set_visible(False)    
+	ax.spines["bottom"].set_visible(False)    
+	ax.spines["right"].set_visible(False)    
+	ax.spines["left"].set_visible(False)    
+	  
+	# Ensure that the axis ticks only show up on the bottom and left of the plot.    
+	# Ticks on the right and top of the plot are generally unnecessary chartjunk.    
+	ax.get_xaxis().tick_bottom()    
+	ax.get_yaxis().tick_left()    
+	  
+	# Limit the range of the plot to only where the data is.    
+	# Avoid unnecessary whitespace.    
+	plt.ylim(0, y_max)    
+	plt.xlim(0, N_rows)    
+	
+	
+	#y axis ticks and label range
+	y_ticks_range = range(0, int(y_max+1), max(1,int((y_max+1)/10)))
+	x_ticks_range = range(0,int(max(case_data["Time"]))+1, max(1,int(max(case_data["Time"])/5)))
+	# Make sure your axis ticks are large enough to be easily read.    
+	# You don't want your viewers squinting to read your plot.    
+	plt.yticks(y_ticks_range, [str(x) for x in y_ticks_range], fontsize=14, **hfont)    
+	plt.xticks(x_ticks_range, fontsize=14, **hfont)  
+	  
+	  
+	# Provide tick lines across the plot to help your viewers trace along    
+	# the axis ticks. Make sure that the lines are light and small so they    
+	# don't obscure the primary data lines. 
+	handles, labels = [[],[]]   
+	for y in y_ticks_range:    
+	   plt.plot(range(0, N_rows), [y] * len(range(0, N_rows)), "--", lw=0.5, color="black", alpha=0.3)    
+	  
+	# Remove the tick marks; they are unnecessary with the tick lines we just plotted.    
+	plt.tick_params(axis="both", which="both", bottom="off", top="off",    
+		        labelbottom="on", left="off", right="off", labelleft="on")    
+	  
+	## Now that the plot is prepared, it's time to actually plot the data!    
+	## Note that I plotted the majors in order of the highest % in the final year.    
+	#majors = ['Health Professions', 'Public Administration', 'Education', 'Psychology',    
+	#          'Foreign Languages', 'English', 'Communications\nand Journalism',    
+	#          'Art and Performance', 'Biology', 'Agriculture',    
+	#          'Social Sciences and History', 'Business', 'Math and Statistics',    
+	#          'Architecture', 'Physical Sciences', 'Computer Science',    
+	#          'Engineering']    
+	# 
+
+	y = case_data["n_tot"]
+	for rank, column in enumerate(["n" + str(i) for i in range(N_classes-1,0, -1)]):    
+	#    # Plot each line separately with its own color, using the Tableau 20    
+	#    # color set in order.    
+	#    plt.plot(case_data_cumul.iloc[:,0].values,    
+	#            case_data_cumul[column.replace("\n", " ")].values,    
+	#            lw=2.5, color=tableau20[rank],  drawstyle='steps')
+
+	#Plot cumulative cases. Makes use of function from fill_between_steps.py:
+	    fbs.fill_between_steps(case_data.iloc[:,0].values, y, ax = ax, facecolor=tableau20[rank],color=tableau20[rank], interpolate=False, lw = 0.01)
+	    y = y - case_data[column]
+	    handles.append(mpatches.Patch(color=tableau20[rank], label=str(20-rank)))
+	    labels.append(str(rank))
+
+	#print(handles) 
+	#print(labels)
+	plt.legend(handles=handles, loc=2, bbox_to_anchor=(1.0, 1), frameon=False) 
+	  
+	## matplotlib's title() call centers the title on the plot, but not the graph,    
+	## so I used the text() call to customize where the title goes.    
+	#  
+	## Make the title big enough so it spans the entire plot, but don't make it    
+	## so big that it requires two lines to show.    
+	#  
+	## Note that if the title is descriptive enough, it is unnecessary to include    
+	## axis labels; they are self-evident, in this plot's case.    
+	plt.text(N_rows/2, y_max+1, "Weekly cases, shaded by category"    
+	       , fontsize=17, ha="center", **hfont)    
+	#  
+	## Always include your data source(s) and copyright notice! And for your    
+	## data sources, tell your viewers exactly where the data came from,    
+	## preferably with a direct link to the data. Just telling your viewers    
+	## that you used data from the "U.S. Census Bureau" is completely useless:    
+	## the U.S. Census Bureau provides all kinds of data, so how are your    
+	## viewers supposed to know which data set you used?    
+	#plt.text(0, -y_max/10, "Data source: numerical simulation using Gillespie algorithm"    
+	#       "\nAuthor: Toby Brett (tsbrett.net / @tsbrett)", fontsize=10, **hfont)    
+	  
+	# Finally, save the figure as a PNG.    
+	# You can also save it as a PDF, JPEG, etc.    
+	# Just change the file extension in this call.    
+	# bbox_inches="tight" removes all the extra whitespace on the edges of your plot.    
+	plt.savefig(outputfile, bbox_inches="tight")
