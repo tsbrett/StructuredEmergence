@@ -105,7 +105,8 @@ def plot_cases(datafile, outputfile):
 
 	#print(handles) 
 	#print(labels)
-	plt.legend(handles=handles, loc=2, bbox_to_anchor=(1.0, 1), frameon=False) 
+	plt.legend(handles=handles, loc=2, bbox_to_anchor=(1.03, 1), frameon=False) 
+	plt.text(101, y_max/2, "Transmissibility", rotation=90 , va="center", fontsize=17, **hfont)  	
 	  
 	## matplotlib's title() call centers the title on the plot, but not the graph,    
 	## so I used the text() call to customize where the title goes.    
@@ -115,8 +116,12 @@ def plot_cases(datafile, outputfile):
 	#  
 	## Note that if the title is descriptive enough, it is unnecessary to include    
 	## axis labels; they are self-evident, in this plot's case.    
-	plt.text(N_rows/2, y_max+1, "Weekly cases, shaded by category"    
-	       , fontsize=17, ha="center", **hfont)    
+	#plt.text(N_rows/2, y_max+1, "Weekly cases, shaded by category"    
+	#       , fontsize=17, ha="center", **hfont)  
+
+
+	plt.xlabel("Week", fontsize=17, ha="center", **hfont)  
+	plt.ylabel("Cases",fontsize=17, ha="center", **hfont)  
 	#  
 	## Always include your data source(s) and copyright notice! And for your    
 	## data sources, tell your viewers exactly where the data came from,    
