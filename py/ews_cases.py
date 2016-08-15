@@ -7,7 +7,8 @@ import numpy as np
 data = pd.read_csv("./test_cases.csv", sep = "\t")
 data.columns = np.array(["Week"] + [i for i in range(0,21)])
 
-ews.get_ews(data["Week"], data["1"], 10, 1)
+ews_data = pd.DataFrame.from_dict(ews.get_ews(data["Week"], data["20"], 10, 1))
+
 
 ##Note ews does not currently work -- KC calculation involves integer division, which is incompatible with python3.4
 

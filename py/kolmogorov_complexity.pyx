@@ -45,7 +45,9 @@ def normedKolmogorovComplexity(s):
 				c=c+1
 				stop=1			
 	return(c/b)
-	
+
+
+#Normed Kolmogorov Complexity calculated using Cython	
 def CnormedKolmogorovComplexity(s):
 	cdef int n = len(s)
 	cdef int p = 10
@@ -83,13 +85,13 @@ def CnormedKolmogorovComplexity(s):
 					stop=1
 	finally:
 		free(cs)
-				
+		
 	b = n/math.log(n,2);			
-	return(c/b)	
+	return(b/c)	
 	
 	
 
-	
+	#CnormedKolmogorovComplexity(bindata[i-window:i]) 
 	
 
 def MovingKC(data, mean, window):
@@ -137,8 +139,8 @@ def binaryTimeseries(a,b):
 			return(1)
 		else:
 			return(0)
-
-	return(map(switch,a-b))
+	bitstring = [switch(i) for i in (a-b)]
+	return(bitstring)
 	
 	
 	
