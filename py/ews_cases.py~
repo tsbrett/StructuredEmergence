@@ -1,0 +1,15 @@
+import ews
+import csv
+import pandas as pd
+import numpy as np
+
+
+data = pd.read_csv("./test_cases.csv", sep = "\t")
+data.columns = np.array(["Week"] + [i for i in range(0,21)])
+
+ews_data = pd.DataFrame.from_dict(ews.get_ews(data["Week"], data["21"], 10, 1))
+
+
+##Note ews does not currently work -- KC calculation involves integer division, which is incompatible with python3.4
+
+
